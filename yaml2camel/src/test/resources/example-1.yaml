@@ -1,0 +1,7 @@
+routes:
+   steps:
+    - timer:tick
+    - direct:info
+ - steps:
+    - direct:info
+    - log:ciao
