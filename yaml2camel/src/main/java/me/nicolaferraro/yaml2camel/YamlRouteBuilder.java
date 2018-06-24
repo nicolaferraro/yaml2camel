@@ -8,7 +8,6 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public class YamlRouteBuilder extends RouteBuilder {
 
@@ -29,22 +28,17 @@ public class YamlRouteBuilder extends RouteBuilder {
     }
 
     protected void configureRoute(Object route) {
-        Optional<String> id = ObjectUtils.get(route, "id", String.class);
-        ObjectUtils.get(route, "steps", List.class)
-                .ifPresent(steps -> this.configureRouteSteps(steps, id));
+        ObjectUtils.get(route, "route", List.class)
+                .ifPresent(this::configureRouteSteps);
     }
 
-    protected void configureRouteSteps(List<?> steps, Optional<String> id) {
+    protected void configureRouteSteps(List<?> steps) {
 
         if (steps.size() > 0) {
 
             // Consumer
             Object fromUri = steps.get(0);
             RouteDefinition route = from((String) fromUri);
-
-            if (id.isPresent()) {
-                route = route.id(id.get());
-            }
 
             for (int i=1; i<steps.size(); i++) {
                 Object to = steps.get(i);
