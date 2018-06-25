@@ -1,5 +1,6 @@
 routes:
- - route:
+ - id: route1
+   route:
     - timer:tick
     - direct:info
  - route:

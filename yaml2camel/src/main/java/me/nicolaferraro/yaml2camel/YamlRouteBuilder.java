@@ -6,8 +6,10 @@ import org.apache.camel.model.RouteDefinition;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class YamlRouteBuilder extends RouteBuilder {
 
@@ -18,7 +20,12 @@ public class YamlRouteBuilder extends RouteBuilder {
         this.tree = parser.load(inputStream);
     }
 
-    public void configure() throws Exception {
+    public YamlRouteBuilder(Reader reader) {
+        Yaml parser = new Yaml();
+        this.tree = parser.load(reader);
+    }
+
+    public void configure() {
         ObjectUtils.get(tree, "routes", List.class)
                 .ifPresent(this::configureRoutes);
     }
@@ -28,17 +35,22 @@ public class YamlRouteBuilder extends RouteBuilder {
     }
 
     protected void configureRoute(Object route) {
+        Optional<String> id = ObjectUtils.get(route, "id", String.class);
         ObjectUtils.get(route, "route", List.class)
-                .ifPresent(this::configureRouteSteps);
+                .ifPresent(steps -> this.configureRouteSteps(steps, id));
     }
 
-    protected void configureRouteSteps(List<?> steps) {
+    protected void configureRouteSteps(List<?> steps, Optional<String> id) {
 
         if (steps.size() > 0) {
 
             // Consumer
             Object fromUri = steps.get(0);
             RouteDefinition route = from((String) fromUri);
+
+            if (id.isPresent()) {
+                route = route.id(id.get());
+            }
 
             for (int i=1; i<steps.size(); i++) {
                 Object to = steps.get(i);
